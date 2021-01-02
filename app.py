@@ -62,8 +62,7 @@ def handle_message(event):
         content = translate_text(event.message.text[3:] , "zh-tw")
         message = TextSendMessage(text=content)
         line_bot_api.reply_message(event.reply_token, message)
-    else: line_bot_api.reply_message(event.reply_token,
-                                     TextSendMessage(text=event.message.text))
+    else: line_bot_api.reply_message(event.reply_token,TextSendMessage(text=event.message.text))
 
 if __name__ == "__main__":
     app.run()
