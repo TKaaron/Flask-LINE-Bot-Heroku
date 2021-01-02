@@ -1,40 +1,72 @@
-import os
-from datetime import datetime
+from flask import Flask, request, abort
 
-from flask import Flask, abort, request
+from linebot import (
+    LineBotApi, WebhookHandler
+)
+from linebot.exceptions import (
+    InvalidSignatureError
+)
+from linebot.models import (
+    MessageEvent, TextMessage, TextSendMessage
+)
 
-# https://github.com/line/line-bot-sdk-python
-from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from googletrans import Translator # Google 翻譯模組
 
 app = Flask(__name__)
 
-line_bot_api = LineBotApi(os.environ.get("cly7Lyd4Z3TB9/fe/Q6Tw0WdjaI97pUxEu8Psvakl3hOgUHpDb+Tdu6XbAkuMqfW7Yn75XOAchAkcVXQBFM/V0XW+jfEavlSHVdcHZiq4QkiYiUfrrU+U+PCjTd+aamsyyJSzjy5Lv+c1eGeE2fu6QdB04t89/1O/w1cDnyilFU="))
-handler = WebhookHandler(os.environ.get("ed3e116a06c707a2f8fb182078f33cbb"))
+from config import * 
+
+line_bot_api = LineBotApi(channel_access_token)
+handler = WebhookHandler(channel_secret)
 
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/callback", methods=['POST'])
 def callback():
+    # get X-Line-Signature header value
+    signature = request.headers['X-Line-Signature']
 
-    if request.method == "GET":
-        return "Hello Heroku"
-    if request.method == "POST":
-        signature = request.headers["X-Line-Signature"]
-        body = request.get_data(as_text=True)
+    # get request body as text
+    body = request.get_data(as_text=True)
+    app.logger.info("Request body: " + body)
 
-        try:
-            handler.handle(body, signature)
-        except InvalidSignatureError:
-            abort(400)
+    # handle webhook body
+    try:
+        handler.handle(body, signature)
+    except InvalidSignatureError:
+        print("Invalid signature. Please check your channel access token/channel secret.")
+        abort(400)
 
-        return "OK"
+    return 'OK'
 
+#新增自訂translate_text()函數
+def translate_text(text,dest='en'):
+    """以google翻譯將text翻譯為目標語言
+
+    :param text: 要翻譯的字串，接受UTF-8編碼。
+    :param dest: 要翻譯的目標語言，參閱googletrans.LANGCODES語言列表。
+    """
+    translator = Translator()
+    result = translator.translate(text, dest).text
+    return result
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    get_message = event.message.text
+    if event.source.user_id =='Udeadbeefdeadbeefdeadbeefdeadbeef':
+        return 'OK'
+    if event.message.text[:3] == "@翻英":
+        content = translate_text(event.message.text[3:], "en")
+        message = TextSendMessage(text=content)
+        line_bot_api.reply_message(event.reply_token, message)
+    if event.message.text[:3] == "@翻日":
+        content = translate_text(event.message.text[3:] , "ja")
+        message = TextSendMessage(text=content)
+        line_bot_api.reply_message(event.reply_token, message)
+    if event.message.text[:3] == "@翻中":
+        content = translate_text(event.message.text[3:] , "zh-tw")
+        message = TextSendMessage(text=content)
+        line_bot_api.reply_message(event.reply_token, message)
+    else: line_bot_api.reply_message(event.reply_token,
+                                     TextSendMessage(text=event.message.text))
 
-    # Send To Line
-    reply = TextSendMessage(text=f"{get_message}")
-    line_bot_api.reply_message(event.reply_token, reply)
+if __name__ == "__main__":
+    app.run()
