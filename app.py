@@ -1,15 +1,12 @@
-from flask import Flask, request, abort
+import os
+from datetime import datetime
 
-from linebot import (
-    LineBotApi, WebhookHandler
-)
-from linebot.exceptions import (
-    InvalidSignatureError
-)
-from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage
-)
+from flask import Flask, abort, request
 
+# https://github.com/line/line-bot-sdk-python
+from linebot import LineBotApi, WebhookHandler
+from linebot.exceptions import InvalidSignatureError
+from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from googletrans import Translator # Google 翻譯模組
 
 app = Flask(__name__)
