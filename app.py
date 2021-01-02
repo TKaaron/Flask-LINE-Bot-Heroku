@@ -10,8 +10,8 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 app = Flask(__name__)
 
-line_bot_api = LineBotApi(os.environ.get("CHANNEL_ACCESS_TOKEN"))
-handler = WebhookHandler(os.environ.get("CHANNEL_SECRET"))
+line_bot_api = LineBotApi(os.environ.get("cly7Lyd4Z3TB9/fe/Q6Tw0WdjaI97pUxEu8Psvakl3hOgUHpDb+Tdu6XbAkuMqfW7Yn75XOAchAkcVXQBFM/V0XW+jfEavlSHVdcHZiq4QkiYiUfrrU+U+PCjTd+aamsyyJSzjy5Lv+c1eGeE2fu6QdB04t89/1O/w1cDnyilFU="))
+handler = WebhookHandler(os.environ.get("ed3e116a06c707a2f8fb182078f33cbb"))
 
 
 @app.route("/", methods=["GET", "POST"])
